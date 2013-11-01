@@ -45,7 +45,9 @@ def export(output, package):
                         continue
                     attr = getattr(module, attrname)
                     #TODO: write class, ETC.
-                    if inspect.isclass(attr):
+                    if inspect.ismodule(attr):
+                        continue
+                    elif inspect.isclass(attr):
                         contents.append(TEMPLATE_CLASS.format(attrname))
                     elif inspect.isfunction(attr):
                         spec = inspect.getargspec(attr)
