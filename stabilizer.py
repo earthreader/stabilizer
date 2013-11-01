@@ -30,7 +30,11 @@ def export(output, package):
             name = module.__name__
             with open(os.path.join(output, name + '.cs'), 'w') as fp:
                 contents = []
-                for attrname in dir(module):
+                try:
+                    all = module.__all__
+                except:
+                    all = dir(module)
+                for attrname in all:
                     if attrname in IGNORE_LIST:
                         continue
                     attr = getattr(module, attrname)
