@@ -3,32 +3,46 @@ import os
 import pkgutil
 
 
+TEMPLATE_CS = """using Python.Runtime;
+
+namespace {0} {{
+{1}
+}}
+"""
+
+TEMPLATE_CLASS = """public class {0} {{
+}}
+"""
+
 def export(output, package):
-    namespace = package.__name__
     prefix = package.__name__ + '.'
-    for importer, modname, ispkg in pkgutil.walk_packages(package.__path__, prefix):
+    for imp, modname, ispkg in pkgutil.walk_packages(package.__path__, prefix):
         try:
             module = __import__(modname, fromlist="dummy")
             name = module.__name__
             with open(os.path.join(output, name + '.cs'), 'w') as fp:
-                fp.write('using Python.Runtime;')
-                fp.write('namespace {0} {{\n'.format(namespace))
-                fp.write('namespace {0} {{\n'.format(name))
-
+                contents = []
                 for attrname in dir(module):
                     if attrname.startswith('__') and attrname.endswith('__'):
                         continue
                     attr = getattr(module, attrname)
+                    print type(attr), attrname
                     #TODO: write class, ETC.
+                    if isinstance(attr, type):
+                        contents.append(TEMPLATE_CLASS.format(attrname))
 
-                fp.write('}\n}')
-        except:
+                fp.write(
+                    TEMPLATE_CS.format(name, '\n'.join(contents))
+                )
+        except Exception as e:
+            print e
             print('Cannot save module: {0}'.format(modname))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='stabler')
-    parser.add_argument('-o', '--output', default='stabilized', help='output derectory')
+    parser.add_argument('-o', '--output', default='stabilized',
+                        help='output derectory')
     parser.add_argument('package', help='package to stabilize')
 
     args = parser.parse_args()
