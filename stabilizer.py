@@ -14,6 +14,9 @@ TEMPLATE_CLASS = """public class {0} {{
 }}
 """
 
+IGNORE_LIST = { '__all__', '__builtins__', '__doc__', '__file__', '__name__',
+               '__package__'}
+
 def export(output, package):
     prefix = package.__name__ + '.'
     for imp, modname, ispkg in pkgutil.walk_packages(package.__path__, prefix):
@@ -23,13 +26,14 @@ def export(output, package):
             with open(os.path.join(output, name + '.cs'), 'w') as fp:
                 contents = []
                 for attrname in dir(module):
-                    if attrname.startswith('__') and attrname.endswith('__'):
+                    if attrname in IGNORE_LIST:
                         continue
                     attr = getattr(module, attrname)
-                    print type(attr), attrname
                     #TODO: write class, ETC.
                     if isinstance(attr, type):
                         contents.append(TEMPLATE_CLASS.format(attrname))
+                    else:
+                        print type(attr), attrname
 
                 fp.write(
                     TEMPLATE_CS.format(name, '\n'.join(contents))
