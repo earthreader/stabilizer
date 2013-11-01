@@ -1,4 +1,5 @@
 import argparse
+import inspect
 import os
 import pkgutil
 
@@ -11,6 +12,10 @@ namespace {0} {{
 """
 
 TEMPLATE_CLASS = """public class {0} {{
+}}
+"""
+
+TEMPLATE_FUNCTION = """public PyObj {0}({1}) {{
 }}
 """
 
@@ -30,13 +35,21 @@ def export(output, package):
                         continue
                     attr = getattr(module, attrname)
                     #TODO: write class, ETC.
-                    if isinstance(attr, type):
+                    if inspect.isclass(attr):
                         contents.append(TEMPLATE_CLASS.format(attrname))
+                    elif inspect.isfunction(attr):
+                        spec = inspect.getargspec(attr)
+                        args = []
+                        for arg in spec.args:
+                            args.append('PyObject {0}'.format(arg))
+                        contents.append(
+                            TEMPLATE_FUNCTION.format(attrname, ', '.join(args))
+                        )
                     else:
                         print type(attr), attrname
 
                 fp.write(
-                    TEMPLATE_CS.format(name, '\n'.join(contents))
+                    TEMPLATE_CS.format(name, ''.join(contents))
                 )
         except Exception as e:
             print e
