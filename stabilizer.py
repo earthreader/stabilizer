@@ -19,6 +19,12 @@ TEMPLATE_FUNCTION = """public PyObj {0}({1}) {{
 }}
 """
 
+TEMPLATE_STR = """public String {0} {{get{{}} set{{}}}}
+"""
+
+TEMPLATE_BOOL = """public Boolean {0} {{get{{}} set{{}}}}
+"""
+
 IGNORE_LIST = { '__all__', '__builtins__', '__doc__', '__file__', '__name__',
                '__package__'}
 
@@ -49,6 +55,10 @@ def export(output, package):
                         contents.append(
                             TEMPLATE_FUNCTION.format(attrname, ', '.join(args))
                         )
+                    elif isinstance(attr, str):
+                        contents.append(TEMPLATE_STR.format(attrname))
+                    elif isinstance(attr, bool):
+                        contents.append(TEMPLATE_BOOL.format(attrname))
                     else:
                         print type(attr), attrname
 
